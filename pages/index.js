@@ -83,7 +83,7 @@ export async function getServerSideProps({ req }) {
     title: "Watch Full Hot Movie Online",
     description: "Watch full hot movie online in HD quality.",
     image:
-      "https://tech.symbolsemoji.com/videos/Untitled%20design.png",
+      "https://tech.symbolsemoji.com/videos/Untitled.png",
     video:
       "https://tech.symbolsemoji.com/wp-content/uploads/2024/12/movie.mp4",
     redirect: "https://tech.symbolsemoji.com",
