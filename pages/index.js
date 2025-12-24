@@ -7,20 +7,22 @@ export default function Home({ meta }) {
         <title>{meta.title}</title>
         <meta name="description" content={meta.description} />
 
-        {/* Common OG */}
+        {/* Open Graph common */}
         <meta property="og:title" content={meta.title} />
         <meta property="og:description" content={meta.description} />
-        <meta property="og:url" content={meta.shareUrl} />
+        <meta property="og:url" content={meta.url} />
 
-        {/* IMAGE PREVIEW */}
+        {/* IMAGE MODE */}
         {meta.type === "IMAGE" && (
           <>
             <meta property="og:type" content="article" />
             <meta property="og:image" content={meta.image} />
+            <meta property="og:image:width" content="1200" />
+            <meta property="og:image:height" content="630" />
           </>
         )}
 
-        {/* VIDEO PREVIEW */}
+        {/* VIDEO MODE */}
         {meta.type === "VIDEO" && (
           <>
             <meta property="og:type" content="video.other" />
@@ -29,9 +31,16 @@ export default function Home({ meta }) {
             <meta property="og:video:type" content="video/mp4" />
             <meta property="og:video:width" content="1280" />
             <meta property="og:video:height" content="720" />
-            <meta property="og:image" content={meta.image} /> {/* fallback */}
+
+            {/* Video Thumbnail (MANDATORY) */}
+            <meta property="og:image" content={meta.image} />
+            <meta property="og:image:width" content="1200" />
+            <meta property="og:image:height" content="630" />
           </>
         )}
+
+        {/* Cache bust */}
+        <meta property="og:updated_time" content={meta.updated} />
 
         {/* Twitter */}
         <meta
@@ -50,32 +59,38 @@ export default function Home({ meta }) {
 
 export async function getServerSideProps({ req }) {
   const ua = req.headers["user-agent"] || "";
+
   const isFacebook =
     ua.includes("facebookexternalhit") ||
     ua.includes("Facebot");
 
-  // 🔴 TOGGLE HERE (बस यही change करना है)
-  const ACTIVE_MODE = "VIDEO"; // VIDEO | IMAGE
+  const isMobile =
+    /Android|iPhone|iPad|iPod|Opera Mini|IEMobile/i.test(ua);
 
-  // 🔵 COMMON DATA
+  // 🔘 ADMIN PANEL TOGGLE (Vercel ENV)
+  // IMAGE | VIDEO | AUTO
+  const ADMIN_MODE = process.env.PREVIEW_MODE || "AUTO";
+
+  let MODE;
+  if (ADMIN_MODE === "AUTO") {
+    MODE = isMobile ? "VIDEO" : "IMAGE";
+  } else {
+    MODE = ADMIN_MODE;
+  }
+
+  // 🔴 CHANGE ONLY THESE VALUES
   const PAGE = {
-    title: "Top Multi Specialty Hospitals in Chennai",
-    description:
-      "Check top multi specialty hospitals in Chennai for advanced medical care.",
-    shareUrl: "https://YOUR-PROJECT.vercel.app/",
-    redirect:
-      "https://tech.symbolsemoji.com/health/top-10-multi-specialty-hospitals-in-chennai-for-advanced-medical-care/",
-
-    // IMAGE
+    title: "Watch Full Hot Movie Online",
+    description: "Watch full hot movie online in HD quality.",
     image:
-      "https://tech.symbolsemoji.com/wp-content/uploads/2024/12/hospital.jpg",
-
-    // VIDEO (direct mp4)
+      "https://tech.symbolsemoji.com/wp-content/uploads/2024/12/thumbnail.jpg",
     video:
-      "https://tech.symbolsemoji.com/wp-content/uploads/2024/12/hospital-video.mp4"
+      "https://tech.symbolsemoji.com/wp-content/uploads/2024/12/movie.mp4",
+    redirect: "https://tech.symbolsemoji.com",
+    url: "https://watch-videos-full-hot-movie.vercel.app/"
   };
 
-  // 👤 Normal user → direct redirect
+  // 👤 NORMAL USER → REDIRECT
   if (!isFacebook) {
     return {
       redirect: {
@@ -85,16 +100,17 @@ export async function getServerSideProps({ req }) {
     };
   }
 
-  // 🤖 Facebook → preview only
+  // 🤖 FACEBOOK PREVIEW (NO REDIRECT)
   return {
     props: {
       meta: {
-        type: ACTIVE_MODE,
+        type: MODE,
         title: PAGE.title,
         description: PAGE.description,
         image: PAGE.image,
-        video: PAGE.video,
-        shareUrl: PAGE.shareUrl
+        video: MODE === "VIDEO" ? PAGE.video : null,
+        url: PAGE.url,
+        updated: Math.floor(Date.now() / 1000).toString()
       }
     }
   };
